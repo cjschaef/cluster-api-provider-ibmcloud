@@ -170,48 +170,6 @@ type TransitGateway struct {
 	ID   *string `json:"id,omitempty"`
 }
 
-// VPCResourceReference is a reference to a specific VPC resource by ID or Name
-// Only one of ID or Name may be specified. Specifying more than one will result in
-// a validation error.
-type VPCResourceReference struct {
-	// ID of resource
-	// +kubebuilder:validation:MinLength=1
-	// +optional
-	ID *string `json:"id,omitempty"`
-
-	// Name of resource
-	// +kubebuilder:validation:MinLength=1
-	// +optional
-	Name *string `json:"name,omitempty"`
-
-	// IBM Cloud VPC region
-	Region *string `json:"region,omitempty"`
-}
-
-// CosInstance represents IBM Cloud COS instance.
-type CosInstance struct {
-	// PresignedURLDuration defines the duration for which presigned URLs are valid.
-	//
-	// This is used to generate presigned URLs for S3 Bucket objects, which are used by
-	// control-plane and worker nodes to fetch bootstrap data.
-	//
-	// When enabled, the IAM instance profiles specified are not used.
-	// +optional
-	PresignedURLDuration *metav1.Duration `json:"presignedURLDuration,omitempty"`
-
-	// Name defines name of IBM cloud COS instance to be created.
-	// +kubebuilder:validation:MinLength:=3
-	// +kubebuilder:validation:MaxLength:=63
-	// +kubebuilder:validation:Pattern=`^[a-z0-9][a-z0-9.-]{1,61}[a-z0-9]$`
-	Name string `json:"name,omitempty"`
-
-	// bucketName is IBM cloud COS bucket name
-	BucketName string `json:"bucketName,omitempty"`
-
-	// bucketRegion is IBM cloud COS bucket region
-	BucketRegion string `json:"bucketRegion,omitempty"`
-}
-
 // GetConditions returns the observations of the operational state of the IBMPowerVSCluster resource.
 func (r *IBMPowerVSCluster) GetConditions() capiv1beta1.Conditions {
 	return r.Status.Conditions

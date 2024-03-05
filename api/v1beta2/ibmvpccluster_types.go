@@ -32,33 +32,50 @@ const (
 
 // IBMVPCClusterSpec defines the desired state of IBMVPCCluster.
 type IBMVPCClusterSpec struct {
-	// INSERT ADDITIONAL SPEC FIELDS - desired state of cluster
 	// Important: Run "make" to regenerate code after modifying this file
 
-	// The IBM Cloud Region the cluster lives in.
-	Region string `json:"region"`
+	// cisInstance defines the IBM Cloud CIS instance to create DNS Records for the cluster.
+	CISInstance *CISInstance `json:"cisInstance,omitempty"`
 
-	// The VPC resources should be created under the resource group.
-	ResourceGroup string `json:"resourceGroup"`
-
-	// The Name of VPC.
-	VPC string `json:"vpc,omitempty"`
-
-	// The Name of availability zone.
-	Zone string `json:"zone,omitempty"`
-
-	// ControlPlaneEndpoint represents the endpoint used to communicate with the control plane.
+	// controlPlaneEndpoint represents the endpoint used to communicate with the control plane.
 	// +optional
 	ControlPlaneEndpoint capiv1beta1.APIEndpoint `json:"controlPlaneEndpoint"`
 
-	// ControlPlaneLoadBalancer is optional configuration for customizing control plane behavior.
+	// controlPlaneLoadBalancer is optional configuration for customizing control plane behavior.
 	// +optional
-	ControlPlaneLoadBalancer *VPCLoadBalancerSpec `json:"controlPlaneLoadBalancer,omitempty"`
+	ControlPlaneLoadBalancer []*VPCLoadBalancerSpec `json:"controlPlaneLoadBalancer,omitempty"`
+	
+	COSInstance *CosInstance `json:"cosInstance,omitempty"`
+
+	// dnsServicesInstance defines the IBM Cloud DNS Services instance to create DNS Records for the cluster.
+	DNSServicesInstance *DNSServicesInstance `json:"dnsServicesInstance,omitempty"`
+
+	// networkSpec represents the VPC network to use for the cluster.
+	NetworkSpec *VPCNetworkSpec `json:"networkSpec,omitempty"`
+
+	// region defines the IBM Cloud Region the cluster resources will be deployed in.
+	Region string `json:"region"`
+
+	// resourceGroup defines the IBM Cloud resource group where the cluster resources should be created.
+	ResourceGroup string `json:"resourceGroup"`
+}
+
+// VPCNetworkSpec defines the desired state of the network resources for the cluster.
+type VPCNetworkSpec struct {
+	ComputeSubnetsSpec []Subnet `json:"computeSubnetsSpec,omitempty"`
+
+	ControlPlaneSubnetsSpec []Subnet `json:"controlPlaneSubentsSpec,omitempty"`
+
+	ResourceGroup string `json:"resourceGroup,omitempty"`
+
+	SecurityGroups []SecurityGroup `json:"securityGroups,omitempty"`
+
+	VPC *VPCResourceReference `json:"vpc,omitempty"`
 }
 
 // VPCLoadBalancerSpec defines the desired state of an VPC load balancer.
 type VPCLoadBalancerSpec struct {
-	// Name sets the name of the VPC load balancer.
+	// name sets the name of the VPC load balancer.
 	// +kubebuilder:validation:MaxLength:=63
 	// +kubebuilder:validation:Pattern=`^([a-z]|[a-z][-a-z0-9]*[a-z0-9])$`
 	// +optional
@@ -69,7 +86,7 @@ type VPCLoadBalancerSpec struct {
 	// +optional
 	Public bool `json:"public,omitempty"`
 
-	// AdditionalListeners sets the additional listeners for the control plane load balancer. .
+	// additionalListeners sets the additional listeners for the control plane load balancer. .
 	// +listType=map
 	// +listMapKey=port
 	// +optional
@@ -79,7 +96,7 @@ type VPCLoadBalancerSpec struct {
 // AdditionalListenerSpec defines the desired state of an
 // additional listener on an VPC load balancer.
 type AdditionalListenerSpec struct {
-	// Port sets the port for the additional listener.
+	// port sets the port for the additional listener.
 	// +kubebuilder:validation:Minimum=1
 	// +kubebuilder:validation:Maximum=65535
 	Port int64 `json:"port"`
@@ -90,7 +107,7 @@ type VPCLoadBalancerStatus struct {
 	// id of VPC load balancer.
 	// +optional
 	ID *string `json:"id,omitempty"`
-	// State is the status of the load balancer.
+	// state is the status of the load balancer.
 	State VPCLoadBalancerState `json:"state,omitempty"`
 	// hostname is the hostname of load balancer.
 	// +optional
@@ -106,17 +123,17 @@ type IBMVPCClusterStatus struct {
 	// Important: Run "make" to regenerate code after modifying this file
 	VPC VPC `json:"vpc,omitempty"`
 
-	// Ready is true when the provider resource is ready.
+	// ready is true when the provider resource is ready.
 	// +optional
 	Ready       bool        `json:"ready"`
 	Subnet      Subnet      `json:"subnet,omitempty"`
 	VPCEndpoint VPCEndpoint `json:"vpcEndpoint,omitempty"`
 
-	// ControlPlaneLoadBalancerState is the status of the load balancer.
+	// controlPlaneLoadBalancerState is the status of the load balancer.
 	// +optional
 	ControlPlaneLoadBalancerState VPCLoadBalancerState `json:"controlPlaneLoadBalancerState,omitempty"`
 
-	// Conditions defines current service state of the load balancer.
+	// conditions defines current service state of the load balancer.
 	// +optional
 	Conditions capiv1beta1.Conditions `json:"conditions,omitempty"`
 }

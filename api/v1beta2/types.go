@@ -16,6 +16,11 @@ limitations under the License.
 
 package v1beta2
 
+import (
+	"github.com/IBM/vpc-go-sdk/vpcv1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+)
+
 // PowerVSInstanceState describes the state of an IBM Power VS instance.
 type PowerVSInstanceState string
 
@@ -75,10 +80,115 @@ var (
 	DeletePolicyRetain = DeletePolicy("retain")
 )
 
+type SecurityGroupRuleAction string
+
+var (
+	SecurityGroupRuleActionAllow = vpcv1.NetworkACLRuleActionAllowConst
+	SecurityGroupRuleActionDeny = vpcv1.NetworkACLRuleActionDenyConst
+)
+
+type SecurityGroupRuleDirection string
+
+var (
+	SecurityGroupRuleDirectionInbound = vpcv1.NetworkACLRuleDirectionInboundConst
+
+	SecurityGroupRuleDirectionOutbound = vpcv1.NetworkACLRuleDirectionOutboundConst
+)
+
+type SecurityGroupRuleProtocol string
+
+var (
+	SecurityGroupRuleProtocolAll = vpcv1.NetworkACLRuleProtocolAllConst
+	SecurityGroupRuleProtocolICMP = vpcv1.NetworkACLRuleProtocolIcmpConst
+	SecurityGroupRuleProtocolTCP = vpcv1.NetworkACLRuleProtocolTCPConst
+	SecurityGroupRuleProtocolUDP = vpcv1.NetworkACLRuleProtocolUDPConst
+)
+
+type SecurityGroupRuleRemoteType string
+
+var (
+	SecurityGroupRuleRemoteTypeAny = SecurityGroupRuleRemoteType("any")
+	SecurityGroupRuleRemoteTypeCIDR = SecurityGroupRuleRemoteType("cidr")
+	SecurityGroupRuleRemoteTypeIP = SecurityGroupRuleRemoteType("ip")
+	SecurityGroupRuleRemoteTypeSG = SecurityGroupRuleRemoteType("sg")
+)
+
+type CISInstance struct {
+	Domain string `json:"domain"`
+	ID string `json:"id,omitempty"`
+	Name string `json:"name,omitempty"`
+}
+
+// CosInstance represents IBM Cloud COS instance.
+type CosInstance struct {
+	// PresignedURLDuration defines the duration for which presigned URLs are valid.
+	//
+	// This is used to generate presigned URLs for S3 Bucket objects, which are used by
+	// control-plane and worker nodes to fetch bootstrap data.
+	//
+	// When enabled, the IAM instance profiles specified are not used.
+	// +optional
+	PresignedURLDuration *metav1.Duration `json:"presignedURLDuration,omitempty"`
+
+	// Name defines name of IBM cloud COS instance to be created.
+	// +kubebuilder:validation:MinLength:=3
+	// +kubebuilder:validation:MaxLength:=63
+	// +kubebuilder:validation:Pattern=`^[a-z0-9][a-z0-9.-]{1,61}[a-z0-9]$`
+	Name string `json:"name,omitempty"`
+
+	// bucketName is IBM cloud COS bucket name
+	BucketName string `json:"bucketName,omitempty"`
+
+	// bucketRegion is IBM cloud COS bucket region
+	BucketRegion string `json:"bucketRegion,omitempty"`
+}
+
+type DNSServicesInstance struct {
+	ID string `json:"id,omitempty"`
+	Name string `json:"name,omitempty"`
+	Zone string `json:"zone"`
+	ZoneLabel string `json:"zoneLabel,omitempty"`
+}
+
 // NetworkInterface holds the network interface information like subnet id.
 type NetworkInterface struct {
 	// Subnet ID of the network interface.
 	Subnet string `json:"subnet,omitempty"`
+}
+
+type PortRange struct {
+	MaximumPort int `json:"maximumPort,omitempty"`
+	MinimumPort int `json:"minimumPort,omitempty"`
+}
+
+type SecurityGroup struct {
+	Name string
+	ResourceGroup string
+	Rules []*SecurityGroupRule
+	Tags []string
+	VPC *VPCResourceReference
+}
+
+type SecurityGroupRule struct {
+	Action SecurityGroupRuleAction
+	Destination *SecurityGroupRuleRemoteSpec
+	Direction SecurityGroupRuleDirection
+	SecurityGroupID string
+	Source *SecurityGroupRuleRemoteSpec
+}
+
+type SecurityGroupRuleRemote struct {
+	CIDRSubnetName string `json:"cidrsubnetname,omitempty"`
+	RemoteType SecurityGroupRuleRemoteType `json:"remoteType"`
+	SecurityGroupName string `json:"securityGroupName,omitempty"`
+}
+
+type SecurityGroupRuleRemoteSpec struct {
+	ICMPCode string `json:"icmpCode,omitempty"`
+	ICMPType string `json:"icmpType,omitempty"`
+	PortRange *PortRange `json:"portRange,omitempty"`
+	Protocol SecurityGroupRuleProtocol `json:"protocol"`
+	Remotes []SecurityGroupRuleRemote `json:"remotes"`
 }
 
 // Subnet describes a subnet.
@@ -97,4 +207,22 @@ type VPCEndpoint struct {
 	FIPID *string `json:"floatingIPID,omitempty"`
 	// +optional
 	LBID *string `json:"loadBalancerIPID,omitempty"`
+}
+
+// VPCResourceReference is a reference to a specific VPC resource by ID or Name
+// Only one of ID or Name may be specified. Specifying more than one will result in
+// a validation error.
+type VPCResourceReference struct {
+	// ID of resource
+	// +kubebuilder:validation:MinLength=1
+	// +optional
+	ID *string `json:"id,omitempty"`
+
+	// Name of resource
+	// +kubebuilder:validation:MinLength=1
+	// +optional
+	Name *string `json:"name,omitempty"`
+
+	// IBM Cloud VPC region
+	Region *string `json:"region,omitempty"`
 }
