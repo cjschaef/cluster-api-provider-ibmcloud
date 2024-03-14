@@ -54,6 +54,18 @@ type IBMVPCClusterSpec struct {
 	// ControlPlaneLoadBalancer is optional configuration for customizing control plane behavior.
 	// +optional
 	ControlPlaneLoadBalancer *VPCLoadBalancerSpec `json:"controlPlaneLoadBalancer,omitempty"`
+
+	// image represents the Image details used for the cluster.
+	// +optional
+	Image *ImageSpec `json:"image,omitempty"`
+
+	// loadBalancers is a set of VPC Load Balancers definition to use for the cluster.
+	// +optional
+	LoadBalancers []*VPCLoadBalancerSpec `json:"loadbalancers,omitempty"`
+
+	// networkSpec represents the VPC network to use for the cluster.
+	// +optional
+	NetworkSpec *VPCNetworkSpec `json:"networkSpec,omitempty"`
 }
 
 // VPCLoadBalancerSpec defines the desired state of an VPC load balancer.
@@ -77,6 +89,10 @@ type VPCLoadBalancerSpec struct {
 	// +listMapKey=port
 	// +optional
 	AdditionalListeners []AdditionalListenerSpec `json:"additionalListeners,omitempty"`
+
+	// backendPools defines the LB's backend pools.
+	// +optional
+	BackendPools []*BackendPoolSpec `json:"backendPools,omitempty"`
 }
 
 // AdditionalListenerSpec defines the desired state of an
@@ -86,6 +102,45 @@ type AdditionalListenerSpec struct {
 	// +kubebuilder:validation:Minimum=1
 	// +kubebuilder:validation:Maximum=65535
 	Port int64 `json:"port"`
+}
+
+// BackendPoolSpec defines the desired configuration of a VPC Load Balancer Backend Pool.
+type BackendPoolSpec struct {
+	// name defines the name of the Backend Pool.
+	// +optional
+	Name *string `json:"name,omitempty"`
+
+	// algorithm defines the load balancing algorithm to use.
+	// +required
+	Algorithm string `json:"algorithm"`
+
+	// protocol defines the protocol to use for the Backend Pool.
+	// +required
+	Protocol string `json:"protocol"`
+
+	// healthDelay defines the seconds to wait between health checks.
+	// +required
+	HealthDelay int64 `json:"healthDelay"`
+
+	// healthRetries defines the max retries for health check.
+	// +required
+	HealthRetries int64 `json:"healthRetries"`
+
+	// healthTimeout defines the seconds to wait for a health check response.
+	// +required
+	HealthTimeout int64 `json:"healthTimeout"`
+
+	// healthType defines the protocol used for health checks.
+	// +required
+	HealthType string `json:"healthType"`
+
+	// healthMonitorURL defines the URL to use for health monitoring.
+	// +optional
+	HealthMonitorURL *string `json:"healthMonitorURL,omitempty"`
+
+	// healthMonitorPort defines the port to perform health monitoring on.
+	// +optional
+	HealthMonitorPort *int64 `json:"healthMonitorPort,omitempty"`
 }
 
 // VPCLoadBalancerStatus defines the status VPC load balancer.
@@ -103,25 +158,121 @@ type VPCLoadBalancerStatus struct {
 	ControllerCreated *bool `json:"controllerCreated,omitempty"`
 }
 
+// ImageSpec defines the desired state of the VPC Custom Image resources for the cluster.
+// +kubebuilder:validation:XValidation:rule="(has(self.cosInstance) || (has(self.cosBucket) || (has(self.cosObject)) && (!has(self.cosInstance) || !has(self.cosBucket) || !has(self.cosObject))",message="if any of cosInstance, cosBucket, or cosObject are specified, all must be specified"
+type ImageSpec struct {
+	// name is the name of the desired VPC Custom Image.
+	// +required
+	Name string `json:"name"`
+
+	// cosInstance is the name of the IBM Cloud COS Instance containing the source of the image, if necessary.
+	// +optional
+	COSInstance *string `json:"cosInstance,omitempty"`
+
+	// cosBucket is the name of the IBM Cloud COS Bucket containing the source of the image, if necessary.
+	// +optional
+	COSBucket *string `json:"cosBucket,omitempty"`
+
+	// cosObject is the name of a IBM Cloud COS Object used as the source of the image, if necessary.
+	// +optional
+	COSObject *string `json:"cosObject,omitempty"`
+
+	// operatingSystem is the Custom Image's Operating System name.
+	// +optional
+	OperatingSystem *string `json:"operatingSystem,omitempty"`
+
+	// resourceGroup is the Resource Group to create the Custom Image in.
+	// +optional
+	ResourceGroup *string `json:"resourceGroup,omitempty"`
+}
+
+// VPCNetworkSpec defines the desired state of the network resources for the cluster.
+type VPCNetworkSpec struct {
+	// computeSubnetsSpec is a set of Subnet's which define the Compute subnets.
+	ComputeSubnetsSpec []Subnet `json:"computeSubnetsSpec,omitempty"`
+
+	// controlPlaneSubnetsSpec is a set of Subnet's which define the Control Plane subnets.
+	ControlPlaneSubnetsSpec []Subnet `json:"controlPlaneSubentsSpec,omitempty"`
+
+	// resourceGroup is the name of the Resource Group containing all of the newtork resources.
+	// This can be different than the Resource Group containing the remaining cluster resources.
+	ResourceGroup *string `json:"resourceGroup,omitempty"`
+
+	// securityGroups is a set of SecurityGroup's which define the VPC Security Groups that manage traffic within and out of the VPC.
+	SecurityGroups []SecurityGroup `json:"securityGroups,omitempty"`
+
+	// vpc defines the IBM Cloud VPC.
+	VPC *VPCResource `json:"vpc,omitempty"`
+}
+
 // IBMVPCClusterStatus defines the observed state of IBMVPCCluster.
 type IBMVPCClusterStatus struct {
-	// INSERT ADDITIONAL STATUS FIELD - define observed state of cluster
 	// Important: Run "make" to regenerate code after modifying this file
-	VPC VPC `json:"vpc,omitempty"`
-
-	// Ready is true when the provider resource is ready.
-	// +optional
-	Ready       bool        `json:"ready"`
-	Subnet      Subnet      `json:"subnet,omitempty"`
-	VPCEndpoint VPCEndpoint `json:"vpcEndpoint,omitempty"`
-
-	// ControlPlaneLoadBalancerState is the status of the load balancer.
-	// +optional
-	ControlPlaneLoadBalancerState VPCLoadBalancerState `json:"controlPlaneLoadBalancerState,omitempty"`
 
 	// Conditions defines current service state of the load balancer.
 	// +optional
 	Conditions capiv1beta1.Conditions `json:"conditions,omitempty"`
+
+	// ControlPlaneLoadBalancerState is the status of the load balancer.
+	// dep: rely on NetworkStatus instead.
+	// +optional
+	ControlPlaneLoadBalancerState VPCLoadBalancerState `json:"controlPlaneLoadBalancerState,omitempty"`
+
+	// COSInstance is the reference to the IBM Cloud COS Instance used for the cluster.
+	COSInstance *ResourceReference `json:"cosInstance,omitempty"`
+
+	// networkStatus is the status of the VPC network in its entirety resources.
+	NetworkStatus *VPCNetworkStatus `json:"networkStatus,omitempty"`
+
+	// ready is true when the provider resource is ready.
+	// +kubebuilder:default=false
+	Ready bool `json:"ready"`
+
+	// resourceGroup is the reference to the IBM Cloud VPC resource group under which the resources will be created.
+	ResourceGroup *ResourceReference `json:"resourceGroupID,omitempty"`
+
+	// dep: rely on NetworkStatus instead.
+	Subnet Subnet `json:"subnet,omitempty"`
+
+	// dep: rely on NetworkStatus instead.
+	VPC VPC `json:"vpc,omitempty"`
+
+	// dep: rely on ControlPlaneEndpoint
+	VPCEndpoint VPCEndpoint `json:"vpcEndpoint,omitempty"`
+}
+
+// VPCNetworkStatus provides details on the status of VPC network resources.
+type VPCNetworkStatus struct {
+	// computeSubnets references the VPC Subnets for the cluster's Data Plane.
+	// +optional
+	ComputeSubnets []*VPCResourceStatus `json:"computeSubnets,omitempty"`
+
+	// controlPlaneSubnets references the VPC Subnets for the cluster's Control Plane.
+	// +optional
+	ControlPlaneSubnets []*VPCResourceStatus `json:"controlPlaneSubnets,omitempty"`
+
+	// loadBalancers references the VPC Load Balancer's for the cluster.
+	// +optional
+	LoadBalancers []VPCLoadBalancerStatus `json:"loadBalancers,omitempty"`
+
+	// publicGateways references the VPC Public Gateways for the cluster.
+	// +optional
+	PublicGateways []*VPCResourceStatus `json:"publicGateways,omitempty"`
+
+	// securityGroups references the VPC Security Groups for the cluster.
+	// +optional
+	SecurityGroups []*VPCResourceStatus `json:"securityGroups,omitempty"`
+
+	// vpc references the IBM Cloud VPC.
+	// +optional
+	VPC *VPCResourceStatus `json:"vpc,omitempty"`
+}
+
+// VPCResourceStatus identifies a resource by crn and type and whether it was created by the controller.
+type VPCResourceStatus struct {
+	// crn defines the IBM Cloud CRN of the resource.
+	// +required
+	CRN string `json:"crn"`
 }
 
 // VPC holds the VPC information.

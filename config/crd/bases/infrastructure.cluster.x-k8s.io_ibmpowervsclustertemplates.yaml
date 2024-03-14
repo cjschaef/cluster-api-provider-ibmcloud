@@ -319,6 +319,61 @@ spec:
                               x-kubernetes-list-map-keys:
                               - port
                               x-kubernetes-list-type: map
+                            backendPools:
+                              description: backendPools defines the LB's backend pools.
+                              items:
+                                description: BackendPoolSpec defines the desired configuration
+                                  of a VPC Load Balancer Backend Pool.
+                                properties:
+                                  algorithm:
+                                    description: algorithm defines the load balancing
+                                      algorithm to use.
+                                    type: string
+                                  healthDelay:
+                                    description: healthDelay defines the seconds to
+                                      wait between health checks.
+                                    format: int64
+                                    type: integer
+                                  healthMonitorPort:
+                                    description: healthMonitorPort defines the port
+                                      to perform health monitoring on.
+                                    format: int64
+                                    type: integer
+                                  healthMonitorURL:
+                                    description: healthMonitorURL defines the URL
+                                      to use for health monitoring.
+                                    type: string
+                                  healthRetries:
+                                    description: healthRetries defines the max retries
+                                      for health check.
+                                    format: int64
+                                    type: integer
+                                  healthTimeout:
+                                    description: healthTimeout defines the seconds
+                                      to wait for a health check response.
+                                    format: int64
+                                    type: integer
+                                  healthType:
+                                    description: healthType defines the protocol used
+                                      for health checks.
+                                    type: string
+                                  name:
+                                    description: name defines the name of the Backend
+                                      Pool.
+                                    type: string
+                                  protocol:
+                                    description: protocol defines the protocol to
+                                      use for the Backend Pool.
+                                    type: string
+                                required:
+                                - algorithm
+                                - healthDelay
+                                - healthRetries
+                                - healthTimeout
+                                - healthType
+                                - protocol
+                                type: object
+                              type: array
                             id:
                               description: id of the loadbalancer
                               type: string
