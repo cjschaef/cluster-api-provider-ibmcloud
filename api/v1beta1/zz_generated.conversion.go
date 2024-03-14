@@ -1269,6 +1269,8 @@ func autoConvert_v1beta2_IBMVPCClusterSpec_To_v1beta1_IBMVPCClusterSpec(in *v1be
 	} else {
 		out.ControlPlaneLoadBalancer = nil
 	}
+	// WARNING: in.Image requires manual conversion: does not exist in peer-type
+	// WARNING: in.LoadBalancers requires manual conversion: does not exist in peer-type
 	// WARNING: in.Network requires manual conversion: does not exist in peer-type
 	return nil
 }
@@ -1295,18 +1297,21 @@ func Convert_v1beta1_IBMVPCClusterStatus_To_v1beta2_IBMVPCClusterStatus(in *IBMV
 }
 
 func autoConvert_v1beta2_IBMVPCClusterStatus_To_v1beta1_IBMVPCClusterStatus(in *v1beta2.IBMVPCClusterStatus, out *IBMVPCClusterStatus, s conversion.Scope) error {
-	if err := Convert_v1beta2_VPC_To_v1beta1_VPC(&in.VPC, &out.VPC, s); err != nil {
+	out.Conditions = *(*apiv1beta1.Conditions)(unsafe.Pointer(&in.Conditions))
+	out.ControlPlaneLoadBalancerState = VPCLoadBalancerState(in.ControlPlaneLoadBalancerState)
+	// WARNING: in.COSInstance requires manual conversion: does not exist in peer-type
+	// WARNING: in.NetworkStatus requires manual conversion: does not exist in peer-type
+	out.Ready = in.Ready
+	// WARNING: in.ResourceGroup requires manual conversion: does not exist in peer-type
+	if err := Convert_v1beta2_Subnet_To_v1beta1_Subnet(&in.Subnet, &out.Subnet, s); err != nil {
 		return err
 	}
-	out.Ready = in.Ready
-	if err := Convert_v1beta2_Subnet_To_v1beta1_Subnet(&in.Subnet, &out.Subnet, s); err != nil {
+	if err := Convert_v1beta2_VPC_To_v1beta1_VPC(&in.VPC, &out.VPC, s); err != nil {
 		return err
 	}
 	if err := Convert_v1beta2_VPCEndpoint_To_v1beta1_VPCEndpoint(&in.VPCEndpoint, &out.VPCEndpoint, s); err != nil {
 		return err
 	}
-	out.ControlPlaneLoadBalancerState = VPCLoadBalancerState(in.ControlPlaneLoadBalancerState)
-	out.Conditions = *(*apiv1beta1.Conditions)(unsafe.Pointer(&in.Conditions))
 	return nil
 }
 
@@ -1687,6 +1692,7 @@ func autoConvert_v1beta2_VPCLoadBalancerSpec_To_v1beta1_VPCLoadBalancerSpec(in *
 	// WARNING: in.ID requires manual conversion: does not exist in peer-type
 	// WARNING: in.Public requires manual conversion: does not exist in peer-type
 	// WARNING: in.AdditionalListeners requires manual conversion: does not exist in peer-type
+	// WARNING: in.BackendPools requires manual conversion: does not exist in peer-type
 	return nil
 }
 
