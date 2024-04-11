@@ -25,4 +25,12 @@ import (
 // use the manage lifecycle of cloud resource groups using Resource Manager APIs.
 type ResourceManager interface {
 	ListResourceGroups(*resourcemanagerv2.ListResourceGroupsOptions) (*resourcemanagerv2.ResourceGroupList, *core.DetailedResponse, error)
+	GetResourceGroup(*resourcemanagerv2.GetResourceGroupOptions) (*resourcemanagerv2.ResourceGroup, *core.DetailedResponse, error)
+	CreateResourceGroup(*resourcemanagerv2.CreateResourceGroupOptions) (*resourcemanagerv2.ResCreateResourceGroup, *core.DetailedResponse, error)
+	DeleteResourceGroup(*resourcemanagerv2.DeleteResourceGroupOptions) (*core.DetailedResponse, error)
+
+	GetResourceGroupByName(string) (*resourcemanagerv2.ResourceGroup, error)
+
+	SetServiceURL(string) error
+	GetServiceURL() string
 }
