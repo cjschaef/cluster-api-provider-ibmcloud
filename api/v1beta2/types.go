@@ -18,8 +18,13 @@ package v1beta2
 
 import "github.com/IBM/vpc-go-sdk/vpcv1"
 
-// DefaultAPIServerPort is defuault API server port number.
-const DefaultAPIServerPort int32 = 6443
+const (
+	// CIDRBlockAny is the CIDRBlock representing any allowable destination/source IP.
+	CIDRBlockAny string = "0.0.0.0/0"
+
+	// DefaultAPIServerPort is defuault API server port number.
+	DefaultAPIServerPort int32 = 6443
+)
 
 // PowerVSInstanceState describes the state of an IBM Power VS instance.
 type PowerVSInstanceState string
@@ -182,12 +187,22 @@ var (
 	ResourceTypeVPC = ResourceType("vpc")
 	// ResourceTypeSubnet is VPC subnet resource.
 	ResourceTypeSubnet = ResourceType("subnet")
+	// ResourceTypeComputeSubnet is a VPC subnet resource designated for the Compute (Data) Plane.
+	ResourceTypeComputeSubnet = ResourceType("computeSubnet")
+	// ResourceTypeControlPlaneSubnet is a VPC subnet resource designated for the Control Plane.
+	ResourceTypeControlPlaneSubnet = ResourceType("controlPlaneSubnet")
+	// ResourceTypeSecurityGroup is a VPC Security Group resource.
+	ResourceTypeSecurityGroup = ResourceType("securityGroup")
 	// ResourceTypeCOSInstance is IBM COS instance resource.
 	ResourceTypeCOSInstance = ResourceType("cosInstance")
 	// ResourceTypeCOSBucket is IBM COS bucket resource.
 	ResourceTypeCOSBucket = ResourceType("cosBucket")
 	// ResourceTypeResourceGroup is IBM Resource Group.
 	ResourceTypeResourceGroup = ResourceType("resourceGroup")
+	// ResourceTypePublicGateway is a VPC Public Gatway.
+	ResourceTypePublicGateway = ResourceType("publicGateway")
+	// ResourceTypeCustomImage is a VPC Custom Image.
+	ResourceTypeCustomImage = ResourceType("customImage")
 )
 
 // SecurityGroupRuleAction represents the actions for a Security Group Rule.
@@ -248,6 +263,17 @@ const (
 	SecurityGroupRuleRemoteTypeSG SecurityGroupRuleRemoteType = SecurityGroupRuleRemoteType("sg")
 )
 
+// GenericResourceReference represents a basic IBM Cloud resource.
+type GenericResourceReference struct {
+	// id defines the generic IBM Cloud Resource ID.
+	// +required
+	ID string `json:"id"`
+
+	// name defines the generic IBM Cloud Resource Name.
+	// +optional
+	Name *string `json:"name,omitempty"`
+}
+
 // NetworkInterface holds the network interface information like subnet id.
 type NetworkInterface struct {
 	// Subnet ID of the network interface.
@@ -260,12 +286,12 @@ type PortRange struct {
 	// maximumPort is the inclusive upper range of ports.
 	// +kubebuilder:validation:Minimum=1
 	// +kubebuilder:validation:Maximum=65535
-	MaximumPort int `json:"maximumPort,omitempty"`
+	MaximumPort int64 `json:"maximumPort,omitempty"`
 
 	// minimumPort is the inclusive lower range of ports.
 	// +kubebuilder:validation:Minimum=1
 	// +kubebuilder:validation:Maximum=65535
-	MinimumPort int `json:"minimumPort,omitempty"`
+	MinimumPort int64 `json:"minimumPort,omitempty"`
 }
 
 // SecurityGroup defines a VPC Security Group that should exist or be created within the specified VPC, with the specified Security Group Rules.
@@ -300,7 +326,7 @@ type SecurityGroup struct {
 // +kubebuilder:validation:XValidation:rule="(has(self.destination) && !has(self.source)) || (!has(self.destination) && has(self.source))",message="both destination and source cannot be provided"
 // +kubebuilder:validation:XValidation:rule="self.direction == 'inbound' ? has(self.source) : true",message="source must be set for SecurityGroupRuleDirectionInbound direction"
 // +kubebuilder:validation:XValidation:rule="self.direction == 'inbound' ? !has(self.destination) : true",message="destination is not valid for SecurityGroupRuleDirectionInbound direction"
-// +kubebuilder:validation:XValidation:rule="self.direction == 'outbound' ? has(self.destination) : true",message="destination must be set for SecurityGroupRuleDirectionOutbound directin"
+// +kubebuilder:validation:XValidation:rule="self.direction == 'outbound' ? has(self.destination) : true",message="destination must be set for SecurityGroupRuleDirectionOutbound direction"
 // +kubebuilder:validation:XValidation:rule="self.direction == 'outbound' ? !has(self.source) : true",message="source is not valid for SecurityGroupRuleDirectionOutbound direction"
 type SecurityGroupRule struct {
 	// action defines whether to allow or deny traffic defined by the Security Group Rule.
@@ -361,12 +387,12 @@ type SecurityGroupRulePrototype struct {
 	// icmpCode is the ICMP code for the Rule.
 	// Only used when Protocol is SecurityGroupProtocolICMP.
 	// +optional
-	ICMPCode *string `json:"icmpCode,omitempty"`
+	ICMPCode *int64 `json:"icmpCode,omitempty"`
 
 	// icmpType is the ICMP type for the Rule.
 	// Only used when Protocol is SecurityGroupProtocolICMP.
 	// +optional
-	ICMPType *string `json:"icmpType,omitempty"`
+	ICMPType *int64 `json:"icmpType,omitempty"`
 
 	// portRange is a range of ports allowed for the Rule's remote.
 	// +optional
