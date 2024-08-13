@@ -33,6 +33,12 @@ type IBMVPCMachineSpec struct {
 	// INSERT ADDITIONAL SPEC FIELDS - desired state of cluster
 	// Important: Run "make" to regenerate code after modifying this file
 
+	// CatalogOffering 
+	CatalogOffering *IBMCatalogOffering `json:"catalogOffering,omitempty"`
+
+	// DedicatedHost
+	DedicatedHost *VPCResourceReference `json:"dedicatedHost,omitempty"`
+
 	// Name of the instance.
 	Name string `json:"name,omitempty"`
 
