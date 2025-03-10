@@ -1826,6 +1826,11 @@ func (in *VPCMachinePlacementTarget) DeepCopyInto(out *VPCMachinePlacementTarget
 		*out = new(VPCResource)
 		(*in).DeepCopyInto(*out)
 	}
+	if in.DedicatedHostProfile != nil {
+		in, out := &in.DedicatedHostProfile, &out.DedicatedHostProfile
+		*out = new(string)
+		**out = **in
+	}
 	if in.DedicatedHostGroup != nil {
 		in, out := &in.DedicatedHostGroup, &out.DedicatedHostGroup
 		*out = new(VPCResource)

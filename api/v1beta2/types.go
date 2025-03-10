@@ -409,10 +409,18 @@ type VPCLoadBalancerBackendPoolMember struct {
 
 // VPCMachinePlacementTarget represents a VPC Machine's placement restrictions.
 // +kubebuilder:validation:XValidation:rule="(has(self.dedicatedHost) && !has(self.dedicatedHostGroup) && !has(self.placementGroup)) || (!has(self.dedicatedHost) && has(self.dedicatedHostGroup) && !has(self.placementGroup)) || (!has(self.dedicatedHost) && !has(self.dedicatedHostGroup) && has(self.placementGroup))",message="only one of dedicatedHost, dedicatedHostGroup, or placementGroup must be defined for machine placement"
+// +kubebuilder:validation:XValidation:rule="(has(self.dedicatedHostProfile) && has(self.dedicatedHost.name)) || !has(self.dedicatedHostProfile)",message="dedicatedHost.name must be defined when dedicatedHostProfile is defined"
 type VPCMachinePlacementTarget struct {
 	// DedicatedHost defines the Dedicated Host to place a VPC Machine (Instance) on.
+	// TODO(cjschaef): Migrate to unified type with DedicatedHostProfile.
 	// +optional
 	DedicatedHost *VPCResource `json:"dedicatedHost,omitempty"`
+
+	// DedicatedHostProfile defines the Dedicated Host profile to use when creating a new Dedicated Host to place a VPC Machine (Instance) on. Only profile names are supported.
+	// This only gets used when the DedicatedHost name is defined, but cannot be found, so a new Dedicated Host is created.
+	// TODO(cjschaef): Migrate to unified type with DedicatedHost.
+	// +optional
+	DedicatedHostProfile *string `json:"dedicatedHostProfile,omitempty"`
 
 	// DedicatedHostGroup defines the Dedicated Host Group to use when placing a VPC Machine (Instance).
 	// +optional

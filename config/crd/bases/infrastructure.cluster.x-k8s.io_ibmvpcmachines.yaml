@@ -389,6 +389,11 @@ spec:
                     x-kubernetes-validations:
                     - message: an id or name must be provided
                       rule: has(self.id) || has(self.name)
+                  dedicatedHostProfile:
+                    description: |-
+                      DedicatedHostProfile defines the Dedicated Host profile to use when creating a new Dedicated Host to place a VPC Machine (Instance) on. Only profile names are supported.
+                      This only gets used when the DedicatedHost name is defined, but cannot be found, so a new Dedicated Host is created.
+                    type: string
                   placementGroup:
                     description: PlacementGroup defines the Placement Group to use
                       when placing a VPC Machine (Instance).
@@ -414,6 +419,10 @@ spec:
                     has(self.dedicatedHostGroup) && !has(self.placementGroup)) ||
                     (!has(self.dedicatedHost) && !has(self.dedicatedHostGroup) &&
                     has(self.placementGroup))
+                - message: dedicatedHost.name must be defined when dedicatedHostProfile
+                    is defined
+                  rule: (has(self.dedicatedHostProfile) && has(self.dedicatedHost.name))
+                    || !has(self.dedicatedHostProfile)
               primaryNetworkInterface:
                 description: PrimaryNetworkInterface is required to specify subnet.
                 properties:
