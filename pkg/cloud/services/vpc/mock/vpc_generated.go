@@ -55,6 +55,22 @@ func (m *MockVpc) EXPECT() *MockVpcMockRecorder {
 	return m.recorder
 }
 
+// CreateDedicatedHost mocks base method.
+func (m *MockVpc) CreateDedicatedHost(options *vpcv1.CreateDedicatedHostOptions) (*vpcv1.DedicatedHost, *core.DetailedResponse, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CreateDedicatedHost", options)
+	ret0, _ := ret[0].(*vpcv1.DedicatedHost)
+	ret1, _ := ret[1].(*core.DetailedResponse)
+	ret2, _ := ret[2].(error)
+	return ret0, ret1, ret2
+}
+
+// CreateDedicatedHost indicates an expected call of CreateDedicatedHost.
+func (mr *MockVpcMockRecorder) CreateDedicatedHost(options any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateDedicatedHost", reflect.TypeOf((*MockVpc)(nil).CreateDedicatedHost), options)
+}
+
 // CreateImage mocks base method.
 func (m *MockVpc) CreateImage(options *vpcv1.CreateImageOptions) (*vpcv1.Image, *core.DetailedResponse, error) {
 	m.ctrl.T.Helper()
@@ -302,6 +318,22 @@ func (m *MockVpc) DeleteVPC(options *vpcv1.DeleteVPCOptions) (*core.DetailedResp
 func (mr *MockVpcMockRecorder) DeleteVPC(options any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteVPC", reflect.TypeOf((*MockVpc)(nil).DeleteVPC), options)
+}
+
+// GetDedicatedHost mocks base method.
+func (m *MockVpc) GetDedicatedHost(options *vpcv1.GetDedicatedHostOptions) (*vpcv1.DedicatedHost, *core.DetailedResponse, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetDedicatedHost", options)
+	ret0, _ := ret[0].(*vpcv1.DedicatedHost)
+	ret1, _ := ret[1].(*core.DetailedResponse)
+	ret2, _ := ret[2].(error)
+	return ret0, ret1, ret2
+}
+
+// GetDedicatedHost indicates an expected call of GetDedicatedHost.
+func (mr *MockVpcMockRecorder) GetDedicatedHost(options any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetDedicatedHost", reflect.TypeOf((*MockVpc)(nil).GetDedicatedHost), options)
 }
 
 // GetDedicatedHostByName mocks base method.
